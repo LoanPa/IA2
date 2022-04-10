@@ -116,10 +116,12 @@ class KMeans:
                 
                 while j < N: #aqui faltaria posar un !end_of_file
                 
-                    if self.X[j] not in self.centroids:
-                        self.centroids[i] = self.X[j]
-                        i += i
-                    j += j
+                    try:
+                        if self.X[j] not in self.centroids:
+                            self.centroids[i] = self.X[j]
+                            i += i
+                        j += j
+                    except: break
 
 
     def get_labels(self):
