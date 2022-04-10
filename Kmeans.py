@@ -11,7 +11,7 @@ class KMeans:
          Constructor of KMeans class
              Args:
                  K (int): Number of cluster
-                 options (dict): dictºionary with options
+                 options (dict): dictionary with options
             """
         self.num_iter = 0
         self.K = K
@@ -45,14 +45,17 @@ class KMeans:
             except:
                 print("Posa algo que puguin ser floats")
 
-         
-        if(X.shape[2] == 3 and X.ndim == 3):
-            X = np.reshape(X, (X.shape[0]*X.shape[1], 3))
+        if X.ndim != 2:
+            if(X.shape[2] == 3 and X.ndim == 3):
+                self.X = np.reshape(X, (X.shape[0]*X.shape[1], 3))
+            else:
+                pass # si s'escau
+                # self.X = np.reshape(X, (X.shape[0]*X.shape[1], 3))
+        else:
+            self.X = X
 
 
 
-
-        self.X = np.random.rand(100, 5)
 
 
 
@@ -90,16 +93,31 @@ class KMeans:
         Initialization of centroids
         """
 
-        #######################################################
+        ###########################################################
         ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
         ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
-        if self.options['km_init'].lower() == 'first':
-            self.centroids = np.random.rand(self.K, self.X.shape[1])
-            self.old_centroids = np.random.rand(self.K, self.X.shape[1])
+        ###########################################################
+
+        # N = numCentroids, D = numChannels
+        
+        K :int
+        D :int
+        i :int = 0
+        K = self.K
+        D = self.X.shape[1]
+
+        self.centroids = np.random.rand()
+
+        while i < K:
+            
+            i += i
+
+        if self.options['km_init'].lower() == 'random':
+            self.centroids = np.random.rand(K, D)
+            self.old_centroids = np.random.rand(K, D)
         else:
-            self.centroids = np.random.rand(self.K, self.X.shape[1])
-            self.old_centroids =np.random.rand(self.K, self.X.shape[1])
+            self.centroids = np.random.rand(K, D)
+            self.old_centroids = np.random.rand(K, D)
 
 
     def get_labels(self):
