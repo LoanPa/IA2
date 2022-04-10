@@ -98,26 +98,28 @@ class KMeans:
         ##  AND CHANGE FOR YOUR OWN CODE
         ###########################################################
 
-        # N = numCentroids, D = numChannels
+
         
-        K :int
-        D :int
+        K :int = self.K
+        D :int = self.X.shape[1]
         i :int = 0
-        K = self.K
-        D = self.X.shape[1]
+        j :int = 0
+        N :int = self.X.axes[1]
 
-        self.centroids = np.random.rand()
 
-        while i < K:
-            
-            i += i
 
         if self.options['km_init'].lower() == 'random':
             self.centroids = np.random.rand(K, D)
             self.old_centroids = np.random.rand(K, D)
         else:
-            self.centroids = np.random.rand(K, D)
-            self.old_centroids = np.random.rand(K, D)
+            while i < K:
+                
+                while j < N: #aqui faltaria posar un !end_of_file
+                
+                    if self.X[j] not in self.centroids:
+                        self.centroids[i] = self.X[j]
+                        i += i
+                    j += j
 
 
     def get_labels(self):
