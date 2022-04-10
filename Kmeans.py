@@ -1,5 +1,5 @@
-__authors__ = ['XXXXXXXXX','YYYYYYYY']
-__group__ = 'GrupZZ'
+__authors__ = ['1571619',' XXXXXXXXX','YYYYYYYY']
+__group__ = 'DM.18'
 
 import numpy as np
 import utils
@@ -31,13 +31,27 @@ class KMeans:
         """Initialization of all pixels, sets X as an array of data in vector form (PxD)
             Args:
                 X (list or np.array): list(matrix) of all pixel values
-                    if matrix has more than 2 dimensions, the dimensionality of the smaple space is the length of
+                    if matrix has more than 2 dimensions, the dimensionality of the sample space is the length of
                     the last dimension
         """
         #######################################################
         ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
+        ##  AND CHANGE IT FOR YOUR OWN CODE
         #######################################################
+    
+        if(X.dtype!= float):
+            try:
+                X = X.astype(float)
+            except:
+                print("Posa algo que puguin ser floats")
+
+         
+        if(X.shape[2] == 3 and X.ndim == 3):
+            X = np.reshape(X, (X.shape[0]*X.shape[1], 3))
+
+
+
+
         self.X = np.random.rand(100, 5)
 
 
