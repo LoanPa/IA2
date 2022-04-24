@@ -1,6 +1,7 @@
 __authors__ = '1571619'
 __group__ = 'DM.18'
 
+
 import numpy as np
 import math
 import operator
@@ -11,6 +12,7 @@ class KNN:
 
         self._init_train(train_data)
         self.labels = np.array(labels)
+        
         #############################################################
         ##  THIS FUNCTION CAN BE MODIFIED FROM THIS POINT, if needed
         #############################################################
@@ -42,19 +44,24 @@ class KNN:
                  the ij-th entry is the j-th nearest train point to the i-th test point
         """
         test_data = np.reshape(test_data,(test_data.shape[0], -1))
-        
+
         dist = cdist(test_data, self.train_data)
       
-        sum = np.sum(dist, axis=0)
-        self.neighbors = np.full(k, 9999)
-        for s in range(sum):
-            i = 0
-            while(s > self.neighbors[i] and i < k):
-                i+=1 #i++
-            try:
-                self.neighbors[i] = dist[s]
-            except:
-                pass
+      
+        dist = np.argsort(dist, axis=1)
+        dist = dist[::,0:k]
+        self.neighbors = self.labels[dist]
+        
+        # sum = np.sum(dist, axis=0)
+        # self.neighbors = np.full(k, 9999)
+        # for s in range(sum.size):
+        #     i = 0
+        #     try:
+        #         while(s > self.neighbors[i] and i < k):
+        #             i+=1 #i++
+        #         self.neighbors[i] = dist[s]
+        #     except:
+        #         pass
          
 
 
@@ -67,13 +74,23 @@ class KNN:
                             (i.e. the class at which that row belongs)
                 2nd array For each of the rows in self.neighbors gets the % of votes for the winning class
         """
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
-        return np.random.randint(10, size=self.neighbors.size), np.random.random(self.neighbors.size)
-        
 
+        labels = self.labels[self.neighbors]
+
+        return1 = np.array()
+        return2 = np.array()
+
+        for i in range(labels):
+            label_frequency = np.array()
+            for j in range(i):
+                if labels[i][j] not in label_frequency:
+                    label_frequency[labels[i][j]] = 1
+                else:
+                    label_frequency[labels[i][j]] += 1
+            return1[i] = np.argmax[label_frequency]
+            return2[i] = (label_frequency[return1[i]] / np.sum(label_frequency))*100
+        
+        return return1, return2
 
     def predict(self, test_data, k):
         """
