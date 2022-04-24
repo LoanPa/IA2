@@ -23,12 +23,12 @@ class KNN:
         :return: assigns the train set to the matrix self.train_data shaped as PxD (P points in a D dimensional space)
         """
 
-        if(train_data!= float):
+        if(train_data.dtype != float):
             try:
                 train_data = train_data.astype(float)
             except:
                 print("Posa algo que puguin ser floats")
-        self.train_data = np.reshape(train_data,(3750,14400)) #3750 son les imatges i 144000 els pixels de cada imatge, canviar-ho mes tard
+        self.train_data = np.reshape(train_data,(train_data.shape[0],train_data.shape[1]*train_data.shape[2]*train_data.shape[3]))
                 
 
 
@@ -41,11 +41,22 @@ class KNN:
         :return: the matrix self.neighbors is created (NxK)
                  the ij-th entry is the j-th nearest train point to the i-th test point
         """
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
-        self.neighbors = np.random.randint(k, size=[test_data.shape[0],k])
+        test_data = np.reshape(test_data,(test_data.shape[0], -1))
+        
+        dist = cdist(test_data, self.train_data)
+      
+        sum = np.sum(dist, axis=0)
+        self.neighbors = np.full(k, 9999)
+        for s in range(sum):
+            i = 0
+            while(s > self.neighbors[i] and i < k):
+                i+=1 #i++
+            try:
+                self.neighbors[i] = dist[s]
+            except:
+                pass
+         
+
 
 
     def get_class(self):
@@ -61,6 +72,7 @@ class KNN:
         ##  AND CHANGE FOR YOUR OWN CODE
         #######################################################
         return np.random.randint(10, size=self.neighbors.size), np.random.random(self.neighbors.size)
+        
 
 
     def predict(self, test_data, k):
