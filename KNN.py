@@ -1,7 +1,8 @@
-__authors__ = '1571619'
+__authors__ = '1571515, 1568205, 1571619'
 __group__ = 'DM.18'
 
 
+from enum import unique
 import numpy as np
 import math
 import operator
@@ -75,22 +76,30 @@ class KNN:
                 2nd array For each of the rows in self.neighbors gets the % of votes for the winning class
         """
 
-        labels = self.labels[self.neighbors]
 
-        return1 = np.array()
-        return2 = np.array()
+        a1 = []
+        for i in self.neighbors:
+            unique, b = np.unique(i, return_counts = True) # Aixo de sorted es mentida >:(
+            a1.append(unique[np.argmax(b)])
 
-        for i in range(labels):
-            label_frequency = np.array()
-            for j in range(i):
-                if labels[i][j] not in label_frequency:
-                    label_frequency[labels[i][j]] = 1
-                else:
-                    label_frequency[labels[i][j]] += 1
-            return1[i] = np.argmax[label_frequency]
-            return2[i] = (label_frequency[return1[i]] / np.sum(label_frequency))*100
+
+        # labels = self.labels[self.neighbors]
+
+        # return1 = np.array()
+        # return2 = np.array()
+
+        # for i in range(labels):
+        #     label_frequency = np.array()
+        #     for j in range(i):
+        #         if labels[i][j] not in label_frequency:
+        #             label_frequency[labels[i][j]] = 1
+        #         else:
+        #             label_frequency[labels[i][j]] += 1
+        #     return1[i] = np.argmax[label_frequency]
+        #     return2[i] = (label_frequency[return1[i]] / np.sum(label_frequency))*100
         
-        return return1, return2
+        # return return1 #, return2
+        return a1
 
     def predict(self, test_data, k):
         """
@@ -99,6 +108,6 @@ class KNN:
         :param k:         :param k:  the number of neighbors to look at
         :return: the output form get_class (2 Nx1 vector, 1st the classm 2nd the  % of votes it got
         """
+        self.get_k_neighbours( test_data, k)
 
-
-        return np.random.randint(10, size=self.neighbors.size), np.random.random(self.neighbors.size)
+        return self.get_class()
