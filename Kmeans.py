@@ -1,8 +1,9 @@
-__authors__ = ['1571619',' XXXXXXXXX','YYYYYYYY']
+__authors__ = ['1568205', '1571619', '1571515']
 __group__ = 'DM.18'
 
 import numpy as np
 import utils
+
 
 class KMeans:
 
@@ -11,53 +12,31 @@ class KMeans:
          Constructor of KMeans class
              Args:
                  K (int): Number of cluster
-                 options (dict): dictionary with options
+                 options (dict): dictºionary with options
             """
         self.num_iter = 0
         self.K = K
         self._init_X(X)
         self._init_options(options)  # DICT options
-
-    #############################################################
-    ##  THIS FUNCTION CAN BE MODIFIED FROM THIS POINT, if needed
-    #############################################################
-
-
-
-
-
+        self._init_centroids()
 
     def _init_X(self, X):
         """Initialization of all pixels, sets X as an array of data in vector form (PxD)
             Args:
                 X (list or np.array): list(matrix) of all pixel values
-                    if matrix has more than 2 dimensions, the dimensionality of the sample space is the length of
+                    if matrix has more than 2 dimensions, the dimensionality of the smaple space is the length of
                     the last dimension
         """
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE IT FOR YOUR OWN CODE
-        #######################################################
-    
-        if(X.dtype!= float):
+        if X.dtype != float:
             try:
                 X = X.astype(float)
             except:
-                print("Posa algo que puguin ser floats")
+                print("Posa algo que siguin floats")
 
-        if X.ndim != 2:
-            if(X.shape[2] == 3 and X.ndim == 3):
-                self.X = np.reshape(X, (X.shape[0]*X.shape[1], 3))
-            else:
-                pass # si s'escau
-                # self.X = np.reshape(X, (X.shape[0]*X.shape[1], 3))
+        if len(X.shape) == 3:
+            self.X = np.reshape(X, (-1, X.shape[2]))
         else:
             self.X = X
-
-
-
-
-
 
     def _init_options(self, options=None):
         """
@@ -76,82 +55,61 @@ class KMeans:
         if not 'max_iter' in options:
             options['max_iter'] = np.inf
         if not 'fitting' in options:
-            options['fitting'] = 'WCD'  #within class distance.
+            options['fitting'] = 'WCD'  # within class distance.
 
         # If your methods need any other prameter you can add it to the options dictionary
         self.options = options
-
-        #############################################################
-        ##  THIS FUNCTION CAN BE MODIFIED FROM THIS POINT, if needed
-        #############################################################
-
-
-
 
     def _init_centroids(self):
         """
         Initialization of centroids
         """
-
-        ###########################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        ###########################################################
-
-
+        index = 1
+        counter = 1
         
-        K :int = self.K
-        D :int = self.X.shape[1]
-        i :int = 0
-        j :int = 0
-        N :int = self.X.axes[1]
-
-
+        if self.options['km_init'].lower() == 'first':
+            self.centroids = np.zeros([1, self.X.shape[1]])
+            self.centroids[0] = self.X[0]
+            while counter != self.K:
+                if (self.centroids != np.array([self.X[index]])).any(axis=1).all():
+                    self.centroids = np.concatenate((self.centroids, np.array([self.X[index]])))
+                    counter += 1
+                index += 1
 
         if self.options['km_init'].lower() == 'random':
-            self.centroids = np.random.rand(K, D)
-            self.old_centroids = np.random.rand(K, D)
-        else:
-            while i < K:
-                
-                while j < N: #aqui faltaria posar un !end_of_file
-                
-                    try:
-                        if self.X[j] not in self.centroids:
-                            self.centroids[i] = self.X[j]
-                            i += i
-                        j += j
-                    except: break
-
+            index = np.random.randint(self.X.shape[0], size=self.K)
+            self.centroids = self.X[index]
 
     def get_labels(self):
         """        Calculates the closest centroid of all points in X
         and assigns each point to the closest centroid
         """
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
-        self.labels = np.random.randint(self.K, size=self.X.shape[0])
+        distances = distance(self.X, self.centroids)
+        self.labels = np.argmin(distances, axis=1)
 
     def get_centroids(self):
         """
         Calculates coordinates of centroids based on the coordinates of all the points assigned to the centroid
         """
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
-        pass
+        self.old_centroids = np.copy(self.centroids)
+
+        for c in range(self.K):
+            idexes = np.where(self.labels == c)
+            clss = self.X[idexes]
+            if clss.size == 0:
+                self.centroids[c] = 0
+            else:
+                self.centroids[c] = clss.mean(axis=0)
 
     def converges(self):
         """
         Checks if there is a difference between current and old centroids
         """
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
+        diff = distance(self.centroids, self.old_centroids)
+
+        for i in range(diff.shape[0]):
+            if self.options['tolerance'] < diff[i][i]:
+                return False
         return True
 
     def fit(self):
@@ -159,65 +117,85 @@ class KMeans:
         Runs K-Means algorithm until it converges or until the number
         of iterations is smaller than the maximum number of iterations.
         """
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
-        pass
+        while self.num_iter < self.options['max_iter']:
+            """1.Per a cada punt de la imatge, troba quin és el centroide més proper."""
+            self.get_labels()
+            """2. Calcula nous centroides utilitzant la funció get_centroids"""
+            self.get_centroids()
+            """3. Augmenta en 1 el número d’iteracions"""
+            self.num_iter += 1
+            """4. Comprova si convergeix, en cas de no fer-ho torna al primer pas."""
+            if self.converges():
+                break
 
     def whitinClassDistance(self):
         """
          returns the whithin class distance of the current clustering
         """
+        wcd = 0
+        n = len(self.X)
+        for i, point in enumerate(self.X):
+            cx = self.labels[i]
+            diff = point - self.centroids[cx]
+            wcd += np.matmul(diff, diff.transpose())
+        wcd = 1/n * wcd
 
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
-        return np.random.rand()
+        return wcd
 
     def find_bestK(self, max_K):
         """
          sets the best k anlysing the results up to 'max_K' clusters
         """
-        #######################################################
-        ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-        ##  AND CHANGE FOR YOUR OWN CODE
-        #######################################################
-        pass
+        wcd = 0
+
+        for k in range(2, max_K):
+            self.K = k
+            self._init_centroids()
+            self.fit()
+            wcd_old = wcd
+            wcd = self.whitinClassDistance()
+            if wcd_old != 0:
+                decrement = 100 - 100 * (wcd / wcd_old)
+                if 20 > decrement:
+                    self.K = k - 1
+                    break
+
 
 
 def distance(X, C):
     """
-    Calculates the distance between each pixcel and each centroid
-    Args:
-        X (numpy array): PxD 1st set of data points (usually data points)
-        C (numpy array): KxD 2nd set of data points (usually cluster centroids points)
+        Calculates the distance between each pixcel and each centroid
+        Args:
+            X (numpy array): PxD 1st set of data points (usually data points)
+            C (numpy array): KxD 2nd set of data points (usually cluster centroids points)
 
-    Returns:
-        dist: PxK numpy array position ij is the distance between the
-        i-th point of the first set an the j-th point of the second set
-    """
+        Returns:
+            dist: PxK numpy array position ij is the distance between the
+            i-th point of the first set an the j-th point of the second set
+        """
 
-    #########################################################
-    ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-    ##  AND CHANGE FOR YOUR OWN CODE
-    #########################################################
-    return np.random.rand(X.shape[0], C.shape[0])
+    distance = np.zeros([len(X), len(C)])
+
+    for i in range(C.shape[0]):
+        distance[:, i] = np.sum((X - C[i]) ** 2, axis=1) ** 0.5
+
+    return distance
 
 
 def get_colors(centroids):
     """
-    for each row of the numpy matrix 'centroids' returns the color laber folllowing the 11 basic colors as a LIST
-    Args:
-        centroids (numpy array): KxD 1st set of data points (usually centroind points)
+        for each row of the numpy matrix 'centroids' returns the color laber folllowing the 11 basic colors as a LIST
+        Args:
+            centroids (numpy array): KxD 1st set of data points (usually centroind points)
 
-    Returns:
-        lables: list of K labels corresponding to one of the 11 basic colors
-    """
+        Returns:
+            lables: list of K labels corresponding to one of the 11 basic colors
+        """
+    labels = []
+    probabilities = utils.get_color_prob(centroids)
 
-    #########################################################
-    ##  YOU MUST REMOVE THE REST OF THE CODE OF THIS FUNCTION
-    ##  AND CHANGE FOR YOUR OWN CODE
-    #########################################################
-    return list(utils.colors)
+    for i in probabilities:
+        max_prob = np.argmax(i, axis=None)
+        labels.append(utils.colors[max_prob])
+
+    return labels
