@@ -67,7 +67,7 @@ class KMeans:
         """
         index = 1
         counter = 1
-        
+
         if self.options['km_init'].lower() == 'first':
             self.centroids = np.zeros([1, self.X.shape[1]])
             self.centroids[0] = self.X[0]
@@ -80,14 +80,13 @@ class KMeans:
         if self.options['km_init'].lower() == 'random':
             index = np.random.randint(self.X.shape[0], size=self.K)
             self.centroids = self.X[index]
-            
-       if self.options['km_init'].lower() == 'custom':
-        minimum = np.min(self.X, axis=0)
-        maximum = np.max(self.X, axis=0)
-        line = maximum - minimum
-        part = line / (self.K - 1)
-        for i in range(self.K):
-            self.centroids[i] = minimum + part * i
+
+        if self.options['km_init'].lower() == 'custom':
+            minimum = np.min(self.X, axis=0)
+            maximum = np.max(self.X, axis=0)
+            part = (maximum - minimum) / (self.K - 1)
+            for i in range(self.K):
+                self.centroids[i] = minimum + part * i
 
     def get_labels(self):
         """        Calculates the closest centroid of all points in X
@@ -151,6 +150,28 @@ class KMeans:
 
         return wcd
 
+    def interClassDistance(self):
+        """
+                 returns the inter-class distance of the current clustering
+        """
+        icd = 0
+        for c1 in range(self.K):
+            for c2 in range(self.K):
+                if c1 != c2:
+                    point = np.where(self.labels == c1)
+                    points_of_c1 = self.X[point]
+                    point = np.where(self.labels == c2)
+                    points_of_c2 = self.X[point]
+
+                    distance = cdist(points_of_c1, points_of_c2, metric='euclidean')
+                    icd += distance.sum()
+        icd = icd / 2
+        return icd
+
+
+    def fisherDiscriminant(self):
+        return self.whitinClassDistance() / self.interClassDistance()
+
     def find_bestK(self, max_K):
         """
          sets the best k anlysing the results up to 'max_K' clusters
@@ -177,7 +198,6 @@ def distance(X, C):
         Args:
             X (numpy array): PxD 1st set of data points (usually data points)
             C (numpy array): KxD 2nd set of data points (usually cluster centroids points)
-
         Returns:
             dist: PxK numpy array position ij is the distance between the
             i-th point of the first set an the j-th point of the second set
@@ -196,7 +216,6 @@ def get_colors(centroids):
         for each row of the numpy matrix 'centroids' returns the color laber folllowing the 11 basic colors as a LIST
         Args:
             centroids (numpy array): KxD 1st set of data points (usually centroind points)
-
         Returns:
             lables: list of K labels corresponding to one of the 11 basic colors
         """
