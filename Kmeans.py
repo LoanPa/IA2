@@ -178,9 +178,6 @@ class KMeans:
         icd = icd / 2
         return icd
 
-    def fisherDiscriminant(self):
-        return self.whitinClassDistance() / self.interClassDistance()
-
     def find_bestK(self, max_K, heuristic= 'withinClassDistance', threshold = 20):
         """
          sets the best k anlysing the results up to 'max_K' clusters
@@ -205,8 +202,6 @@ class KMeans:
                     if threshold > increment:
                         self.K = k - 1
                         break
-            elif heuristic == "fisherDiscriminant":
-                break
 
 def distance(X, C):
     """
