@@ -76,17 +76,27 @@ class KMeans:
                     self.centroids = np.concatenate((self.centroids, np.array([self.X[index]])))
                     counter += 1
                 index += 1
+            return self.centroids
 
         if self.options['km_init'].lower() == 'random':
             index = np.random.randint(self.X.shape[0], size=self.K)
-            self.centroids = self.X[index]
+            self.centroids = self.X[index, :]
+            return self.centroids
 
         if self.options['km_init'].lower() == 'custom':
-            minimum = np.min(self.X, axis=0)
-            maximum = np.max(self.X, axis=0)
-            part = (maximum - minimum) / (self.K - 1)
-            for i in range(self.K):
-                self.centroids[i] = minimum + part * i
+            # Initialize to a (k,n) all-zero matrix
+            self.centroids = np.mat(np.zeros([self.K, self.X.shape[1]]))
+            for j in range(self.K):
+                # Get the minimum and maximum values of the column
+                min_value = np.min(self.X[:, j])
+                max_value = np.max(self.X[:, j])
+                # Get the range of the column (max - min)
+                range_value = max_value - min_value
+                # The j dimensional data value of the k prime vectors is randomized to a value that lies within (min,
+                # max)
+                self.centroids[:, j] = min_value + range_value * np.random.rand(self.K, 1) # random.rand(row, column)
+                # produces a matrix of this shape with each element in [0,1)
+                return self.centroids
 
     def get_labels(self):
         """        Calculates the closest centroid of all points in X
@@ -146,7 +156,7 @@ class KMeans:
             cx = self.labels[i]
             diff = point - self.centroids[cx]
             wcd += np.matmul(diff, diff.transpose())
-        wcd = 1/n * wcd
+        wcd = 1 / n * wcd
 
         return wcd
 
@@ -155,42 +165,48 @@ class KMeans:
                  returns the inter-class distance of the current clustering
         """
         icd = 0
-        for c1 in range(self.K):
-            for c2 in range(self.K):
-                if c1 != c2:
-                    point = np.where(self.labels == c1)
-                    points_of_c1 = self.X[point]
-                    point = np.where(self.labels == c2)
-                    points_of_c2 = self.X[point]
+        for class1 in range(self.K):
+            for class2 in range(self.K):
+                if class1 != class2:
+                    point = np.where(self.labels == class1)
+                    pointsClass1 = self.X[point]
+                    point = np.where(self.labels == class2)
+                    pointsClass2 = self.X[point]
 
-                    distance = cdist(points_of_c1, points_of_c2, metric='euclidean')
+                    distance = cdist(pointsClass1, pointsClass2, metric='euclidean')
                     icd += distance.sum()
         icd = icd / 2
         return icd
 
-
     def fisherDiscriminant(self):
         return self.whitinClassDistance() / self.interClassDistance()
 
-    def find_bestK(self, max_K):
+    def find_bestK(self, max_K, heuristic= 'withinClassDistance', threshold = 20):
         """
          sets the best k anlysing the results up to 'max_K' clusters
         """
-        wcd = 0
-
+        h = 0
         for k in range(2, max_K):
             self.K = k
             self._init_centroids()
             self.fit()
-            wcd_old = wcd
-            wcd = self.whitinClassDistance()
-            if wcd_old != 0:
-                decrement = 100 - 100 * (wcd / wcd_old)
-                if 20 > decrement:
-                    self.K = k - 1
-                    break
-
-
+            h_old = h
+            if heuristic == 'withinClassDistance':
+                h = self.whitinClassDistance()
+                if h_old != 0:
+                    decrement = 100 - 100 * (h / h_old)
+                    if threshold > decrement:
+                        self.K = k - 1
+                        break
+            elif heuristic == 'interClassDistance':
+                h = self.interClassDistance()
+                if h_old != 0:
+                    increment = 100 * (h / h_old)
+                    if threshold > increment:
+                        self.K = k - 1
+                        break
+            elif heuristic == "fisherDiscriminant":
+                break
 
 def distance(X, C):
     """
