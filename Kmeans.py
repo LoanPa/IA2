@@ -3,6 +3,7 @@ __group__ = 'DM.18'
 
 import numpy as np
 import utils
+from scipy.spatial.distance import cdist
 
 
 class KMeans:
@@ -79,6 +80,14 @@ class KMeans:
         if self.options['km_init'].lower() == 'random':
             index = np.random.randint(self.X.shape[0], size=self.K)
             self.centroids = self.X[index]
+            
+       if self.options['km_init'].lower() == 'custom':
+        minimum = np.min(self.X, axis=0)
+        maximum = np.max(self.X, axis=0)
+        line = maximum - minimum
+        part = line / (self.K - 1)
+        for i in range(self.K):
+            self.centroids[i] = minimum + part * i
 
     def get_labels(self):
         """        Calculates the closest centroid of all points in X
